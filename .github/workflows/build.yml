@@ -4,6 +4,10 @@ on:
   push:
     branches: [main]
     tags: ['v*']
+    paths-ignore:
+      - '.github/workflows/build.yml'
+      - '.github/workflows/boot-test-artifact.yml'
+      - 'tests/qemu-smoke.py'
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -35,17 +39,30 @@ jobs:
 
       - name: Boot the NotreBoot ISO under OVMF and test NotreShell
         run: |
-          firmware="$(find /usr/share \( -type f -o -type l \) \
+          firmware_code="$(find /usr/share \( -type f -o -type l \) \
             \( -name 'OVMF_CODE.fd' -o -name 'OVMF_CODE_4M.fd' \) \
             -print -quit)"
-          if [ -z "$firmware" ]; then
+          if [ -z "$firmware_code" ]; then
             echo "No non-secure OVMF_CODE firmware found; available OVMF files:" >&2
             find /usr/share \( -type f -o -type l \) -iname '*OVMF*.fd' -print >&2
             exit 1
           fi
-          echo "Using OVMF firmware: $firmware"
+          case "$firmware_code" in
+            *OVMF_CODE_4M.fd) firmware_vars="${firmware_code%OVMF_CODE_4M.fd}OVMF_VARS_4M.fd" ;;
+            *OVMF_CODE.fd) firmware_vars="${firmware_code%OVMF_CODE.fd}OVMF_VARS.fd" ;;
+          esac
+          if [ ! -f "$firmware_vars" ]; then
+            echo "Matching OVMF variables template not found: $firmware_vars" >&2
+            find /usr/share \( -type f -o -type l \) -iname '*OVMF*.fd' -print >&2
+            exit 1
+          fi
+          firmware_vars_copy="$RUNNER_TEMP/notreos-ovmf-vars.fd"
+          cp "$firmware_vars" "$firmware_vars_copy"
+          echo "Using OVMF code: $firmware_code"
+          echo "Using writable OVMF variables: $firmware_vars_copy"
           python3 tests/qemu-smoke.py \
-            output/images/notreos-ancient-0.0.1-x86_64-uefi.iso "$firmware"
+            output/images/notreos-ancient-0.0.1-x86_64-uefi.iso \
+            "$firmware_code" "$firmware_vars_copy"
 
       - name: Upload release artifacts
         if: always()

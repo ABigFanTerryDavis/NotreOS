@@ -20,14 +20,18 @@ def fail(proc, output, reason):
 
 
 def main():
-    if len(sys.argv) != 3:
-        raise SystemExit("usage: qemu-smoke.py <notreos.iso> <OVMF_CODE.fd>")
-    iso, firmware = sys.argv[1:]
-    if not os.path.isfile(iso) or not os.path.isfile(firmware):
-        raise SystemExit("ISO or OVMF firmware file is missing")
+    if len(sys.argv) != 4:
+        raise SystemExit(
+            "usage: qemu-smoke.py <notreos.iso> <OVMF_CODE.fd> <OVMF_VARS.fd>"
+        )
+    iso, firmware_code, firmware_vars = sys.argv[1:]
+    if not all(os.path.isfile(path) for path in (iso, firmware_code, firmware_vars)):
+        raise SystemExit("ISO, OVMF code image or OVMF variable store is missing")
 
     command = [
-        "qemu-system-x86_64", "-m", "1024", "-bios", firmware,
+        "qemu-system-x86_64", "-m", "1024",
+        "-drive", f"if=pflash,format=raw,unit=0,file={firmware_code},readonly=on",
+        "-drive", f"if=pflash,format=raw,unit=1,file={firmware_vars}",
         "-cdrom", iso, "-boot", "d", "-display", "none", "-monitor", "none",
         "-serial", "stdio", "-no-reboot",
     ]

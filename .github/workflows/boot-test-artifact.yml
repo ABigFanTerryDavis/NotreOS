@@ -1,0 +1,61 @@
+name: Boot NotreOS build artifact
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_run_id:
+        description: GitHub Actions run ID that uploaded the NotreOS artifact
+        required: true
+        type: string
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  boot-test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out the smoke-test harness
+        uses: actions/checkout@v4
+
+      - name: Install QEMU and OVMF
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y qemu-system-x86 ovmf
+
+      - name: Download the previously built NotreOS artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: NotreOS-Ancient-0.0.1-x86_64
+          repository: ${{ github.repository }}
+          run-id: ${{ inputs.source_run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: artifacts
+
+      - name: Boot the artifact under OVMF and test NotreShell
+        run: |
+          set -euo pipefail
+          firmware_code="$(find /usr/share \( -type f -o -type l \) \
+            \( -name 'OVMF_CODE.fd' -o -name 'OVMF_CODE_4M.fd' \) \
+            -print -quit)"
+          if [ -z "$firmware_code" ]; then
+            echo "No non-secure OVMF_CODE firmware found; available OVMF files:" >&2
+            find /usr/share \( -type f -o -type l \) -iname '*OVMF*.fd' -print >&2
+            exit 1
+          fi
+          case "$firmware_code" in
+            *OVMF_CODE_4M.fd) firmware_vars="${firmware_code%OVMF_CODE_4M.fd}OVMF_VARS_4M.fd" ;;
+            *OVMF_CODE.fd) firmware_vars="${firmware_code%OVMF_CODE.fd}OVMF_VARS.fd" ;;
+          esac
+          if [ ! -f "$firmware_vars" ]; then
+            echo "Matching OVMF variables template not found: $firmware_vars" >&2
+            find /usr/share \( -type f -o -type l \) -iname '*OVMF*.fd' -print >&2
+            exit 1
+          fi
+          firmware_vars_copy="$RUNNER_TEMP/notreos-ovmf-vars.fd"
+          cp "$firmware_vars" "$firmware_vars_copy"
+          python3 tests/qemu-smoke.py \
+            artifacts/notreos-ancient-0.0.1-x86_64-uefi.iso \
+            "$firmware_code" "$firmware_vars_copy"
