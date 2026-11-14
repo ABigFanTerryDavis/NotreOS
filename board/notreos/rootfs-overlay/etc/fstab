@@ -1,0 +1,5 @@
+proc     /proc     proc     defaults                       0 0
+sysfs    /sys      sysfs    defaults                       0 0
+devpts   /dev/pts  devpts   mode=0620,ptmxmode=000         0 0
+tmpfs    /run      tmpfs    nosuid,nodev,mode=0755         0 0
+tmpfs    /tmp      tmpfs    nosuid,nodev,mode=1777         0 0

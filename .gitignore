@@ -1,0 +1,10 @@
+# Buildroot outputs and downloaded source archives
+downloads/
+dl/
+output/
+.tmp/
+*.o
+*.so
+*.efi.tmp
+__pycache__/
+*.py[cod]

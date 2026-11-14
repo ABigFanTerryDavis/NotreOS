@@ -1,0 +1,7 @@
+config BR2_PACKAGE_NOTRE_INIT
+	bool "NotreInit"
+	depends on BR2_USE_MMU
+	select BR2_PACKAGE_NOTRE_SHELL
+	help
+	  NotreOS's own PID 1. It mounts early filesystems, resolves an optional
+	  root= device, launches the system shell and starts the graphical session.

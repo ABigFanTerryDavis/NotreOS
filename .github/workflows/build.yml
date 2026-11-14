@@ -1,0 +1,53 @@
+name: Build NotreOS Ancient
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Install build and QEMU tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y \
+            bc bison build-essential cpio dosfstools file flex gawk git \
+            libelf-dev libncurses-dev libssl-dev mtools perl python3 \
+            qemu-system-x86 rsync unzip wget xorriso xz-utils ovmf
+
+      - name: Run host smoke tests
+        run: ./tests/unit-smoke.sh
+
+      - name: Build NotreOS from source
+        run: ./scripts/build.sh
+
+      - name: Boot the NotreBoot ISO under OVMF and test NotreShell
+        run: |
+          firmware="$(find /usr/share -name 'OVMF_CODE.fd' -print -quit)"
+          test -n "$firmware"
+          python3 tests/qemu-smoke.py \
+            output/images/notreos-ancient-0.0.1-x86_64-uefi.iso "$firmware"
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: NotreOS-Ancient-0.0.1-x86_64
+          if-no-files-found: error
+          path: |
+            output/images/notreos-ancient-0.0.1-x86_64-uefi.iso
+            output/images/rootfs.ext4
+            output/images/bzImage
+            output/images/NotreBootX64.efi
+            output/images/notreos-ancient-0.0.1-manifest.txt

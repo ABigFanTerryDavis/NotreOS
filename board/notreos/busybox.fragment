@@ -1,0 +1,8 @@
+# BusyBox is retained for small system utilities, not as a shell.
+# NotreOS launches its own /usr/bin/notre-shell from NotreInit.
+# CONFIG_ASH is not set
+# CONFIG_SHELL_ASH is not set
+# CONFIG_SH_IS_ASH is not set
+# CONFIG_HUSH is not set
+# CONFIG_SH_IS_HUSH is not set
+CONFIG_SH_IS_NONE=y

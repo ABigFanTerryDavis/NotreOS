@@ -1,0 +1,9 @@
+# Upstream source pins and build facts
+
+NotreOS pins **Buildroot 2026.08.1** as its source-build orchestrator. The [official downloads page](https://buildroot.org/download.html) lists this point release dated 2026-10-22. The build downloads `https://buildroot.org/downloads/buildroot-2026.08.1.tar.xz` and verifies SHA-256 `34fb7bea8a213ffde39cc02e61703391560f26e0850f03138c722d0b09880f2b` before extracting it. The [Buildroot manual](https://buildroot.org/downloads/manual/manual.html) documents external trees for board files, overlays, packages and defconfigs; NotreOS keeps its project-specific files in that layout.
+
+NotreOS pins **Linux 7.1.13**. Its source archive SHA-256, `614d95fafdcb5cce2b6620e7edc6afbb606bffd4655405586815d84687841ad7`, is recorded in Buildroot's [version-specific kernel hash file](https://github.com/buildroot/buildroot/blob/2026.08.1/linux/7.1.13/linux.hash), so the build can retain forced hash verification.
+
+The pinned Buildroot package builds **Dillo 3.3.0** with FLTK. Its [package configuration](https://github.com/buildroot/buildroot/blob/2026.08.1/package/dillo/Config.in) requires X.org and C++; the [package recipe](https://github.com/buildroot/buildroot/blob/2026.08.1/package/dillo/dillo.mk) uses OpenSSL for TLS. Buildroot 2026.08.1 pins **GNU-EFI 4.0.4**, whose [upstream project](https://github.com/ncroxon/gnu-efi/tree/4.0.4) supplies UEFI headers and application-link support, not a bootloader.
+
+NotreBoot is NotreOS-authored C code. It uses the GNU-EFI 4.0.4 [library header](https://raw.githubusercontent.com/ncroxon/gnu-efi/4.0.4/inc/efilib.h) for helpers such as `InitializeLib`, `FileDevicePath`, boot-services globals and protocol GUID aliases. The upstream [EFI header](https://raw.githubusercontent.com/ncroxon/gnu-efi/4.0.4/inc/efi.h) includes the UEFI filesystem, loaded-image and device-path protocol declarations. No GRUB bootloader or BusyBox shell is selected for the shipped boot and interactive-shell paths.

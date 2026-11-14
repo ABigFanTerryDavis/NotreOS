@@ -1,0 +1,6 @@
+config BR2_PACKAGE_NOTRE_SHELL
+	bool "NotreShell"
+	depends on BR2_USE_MMU
+	help
+	  NotreOS's own small interactive command shell for Ancient 0.0.1.
+	  It executes programs from PATH and implements a few basic built-ins.
