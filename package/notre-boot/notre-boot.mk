@@ -6,8 +6,12 @@ NOTRE_BOOT_DEPENDENCIES = gnu-efi
 NOTRE_BOOT_INSTALL_TARGET = NO
 NOTRE_BOOT_INSTALL_IMAGES = YES
 
-NOTRE_BOOT_EFI_CFLAGS = -fpic -fshort-wchar -mno-red-zone \
-	-fno-stack-protector -fno-stack-check -fno-strict-aliasing -fno-builtin
+NOTRE_BOOT_EFI_CFLAGS = -fPIC -fshort-wchar -mno-red-zone \
+	-fno-stack-protector -fno-stack-check -fno-strict-aliasing -fno-builtin \
+	-DGNU_EFI_USE_MS_ABI -maccumulate-outgoing-args
+NOTRE_BOOT_EFI_LDFLAGS = -nostdlib --warn-common --no-undefined \
+	--fatal-warnings --build-id=sha1 -z norelro -z nocombreloc \
+	--no-dynamic-linker -pie -Bsymbolic
 
 define NOTRE_BOOT_BUILD_CMDS
 	$(TARGET_CC) $(TARGET_CFLAGS) $(NOTRE_BOOT_EFI_CFLAGS) \
@@ -15,15 +19,16 @@ define NOTRE_BOOT_BUILD_CMDS
 		-I$(STAGING_DIR)/usr/include/efi/x86_64 \
 		-I$(STAGING_DIR)/usr/include/efi/protocol \
 		-c $(@D)/main.c -o $(@D)/main.o
-	$(TARGET_LD) -nostdlib -znocombreloc \
+	$(TARGET_LD) $(NOTRE_BOOT_EFI_LDFLAGS) \
 		-T $(STAGING_DIR)/usr/lib/elf_x86_64_efi.lds \
-		-shared -Bsymbolic \
+		-L$(STAGING_DIR)/usr/lib \
 		$(STAGING_DIR)/usr/lib/crt0-efi-x86_64.o $(@D)/main.o \
-		-L$(STAGING_DIR)/usr/lib -lefi -lgnuefi \
+		-lefi -lgnuefi \
 		-o $(@D)/notreboot.so
 	$(TARGET_OBJCOPY) -j .text -j .sdata -j .data -j .dynamic \
-		-j .dynsym -j .rel -j .rela -j .reloc \
-		--target=efi-app-x86_64 $(@D)/notreboot.so $(@D)/NotreBootX64.efi
+		-j .rodata -j .rel -j .rela -j .rel.* -j .rela.* \
+		-j .rel* -j .rela* -j .areloc -j .reloc \
+		-O efi-app-x86_64 $(@D)/notreboot.so $(@D)/NotreBootX64.efi
 endef
 
 define NOTRE_BOOT_INSTALL_IMAGES_CMDS

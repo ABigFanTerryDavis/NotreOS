@@ -94,7 +94,7 @@ static VOID read_config(EFI_HANDLE device, CHAR16 *out, UINTN *used)
         default_options(out, used);
 }
 
-EFI_STATUS EFIAPI efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *system_table)
+EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *system_table)
 {
     EFI_STATUS status;
     EFI_LOADED_IMAGE *self = NULL;
@@ -110,8 +110,12 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *system_table)
 
     status = uefi_call_wrapper(BS->HandleProtocol, 3, image,
                                &LoadedImageProtocol, (VOID **)&self);
-    if (EFI_ERROR(status) || self == NULL) {
-        Print(L"NotreBoot: cannot inspect its UEFI image.\r\n");
+    if (EFI_ERROR(status)) {
+        Print(L"NotreBoot: LoadedImage protocol lookup failed: %r\r\n", status);
+        return status;
+    }
+    if (self == NULL) {
+        Print(L"NotreBoot: LoadedImage protocol returned NULL.\r\n");
         return EFI_LOAD_ERROR;
     }
 

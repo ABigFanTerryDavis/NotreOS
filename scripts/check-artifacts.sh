@@ -15,6 +15,12 @@ file "$IMAGE_DIR/NotreBootX64.efi" | grep -qi 'EFI application' || {
     exit 1
 }
 
+loader_strings="$(strings -el "$IMAGE_DIR/NotreBootX64.efi")"
+if ! grep -Fq 'NotreBoot' <<<"$loader_strings" || ! grep -Fq 'vmlinuz.efi' <<<"$loader_strings"; then
+    echo 'NotreBootX64.efi is missing its message or kernel path; preserve .rodata during EFI conversion.' >&2
+    exit 1
+fi
+
 report="$(xorriso -indev "$ISO" -report_el_torito plain 2>&1)"
 printf '%s\n' "$report" | grep -qi 'UEFI' || {
     echo 'ISO does not advertise a UEFI El Torito boot entry.' >&2
