@@ -35,12 +35,20 @@ jobs:
 
       - name: Boot the NotreBoot ISO under OVMF and test NotreShell
         run: |
-          firmware="$(find /usr/share -name 'OVMF_CODE.fd' -print -quit)"
-          test -n "$firmware"
+          firmware="$(find /usr/share \( -type f -o -type l \) \
+            \( -name 'OVMF_CODE.fd' -o -name 'OVMF_CODE_4M.fd' \) \
+            -print -quit)"
+          if [ -z "$firmware" ]; then
+            echo "No non-secure OVMF_CODE firmware found; available OVMF files:" >&2
+            find /usr/share \( -type f -o -type l \) -iname '*OVMF*.fd' -print >&2
+            exit 1
+          fi
+          echo "Using OVMF firmware: $firmware"
           python3 tests/qemu-smoke.py \
             output/images/notreos-ancient-0.0.1-x86_64-uefi.iso "$firmware"
 
       - name: Upload release artifacts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: NotreOS-Ancient-0.0.1-x86_64
