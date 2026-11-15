@@ -1,4 +1,8 @@
-# NotreOS Ancient 0.0.1
+# NotreOS
+
+**Active development: [NotreOS Core Lite 0.0.1](core-lite/README.md).** Core Lite uses the official Zorin OS 18.1 Lite minimal/live package profile on Ubuntu 24.04, with a lightweight P4DE desktop starter. Its build and GitHub Actions checks do not replace the completed Ancient 0.0.1 release described below.
+
+## Ancient 0.0.1
 
 NotreOS is a small x86_64 Linux system. Linux is the kernel; NotreOS supplies its own UEFI bootloader (**NotreBoot**), first-process init (**NotreInit**) and interactive shell (**NotreShell**). The default graphical session is **P4DE — Platform 4 Desktop Environment**. Dillo is the browser in the first edition, **Ancient**.
 
@@ -46,4 +50,4 @@ The workflow validates NotreShell, builds the source tree, inspects the EFI/ISO 
 
 ## License
 
-No NotreOS project license has been selected yet. The repository is public, but without a license, others should not assume they have permission to reuse or redistribute the project. Add a license before inviting contributions or downstream reuse.
+NotreOS project source is licensed under [GPL-3.0](LICENSE). Third-party packages retain their upstream licenses.

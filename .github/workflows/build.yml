@@ -8,8 +8,19 @@ on:
       - '.github/workflows/build.yml'
       - '.github/workflows/boot-test-artifact.yml'
       - 'tests/qemu-smoke.py'
+      - '.github/workflows/build-core-lite.yml'
+      - 'core-lite/**'
+      - 'scripts/build-core-lite.sh'
+      - 'tests/core-lite/**'
+      - 'README.md'
   pull_request:
     branches: [main]
+    paths-ignore:
+      - '.github/workflows/build-core-lite.yml'
+      - 'core-lite/**'
+      - 'scripts/build-core-lite.sh'
+      - 'tests/core-lite/**'
+      - 'README.md'
   workflow_dispatch:
 
 permissions:
