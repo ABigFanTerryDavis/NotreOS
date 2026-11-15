@@ -1,10 +1,12 @@
-# Zorin OS 18.1 Lite packages from Zorin's signed Noble stable archive.
-# These use the official Lite-minimal profile, Lite defaults/live settings and menu plug-in.
+# Official Zorin OS 18.1 Lite packages from Zorin's signed Noble Stable and Patches archives.
+# The Patches archive provides xfdesktop4 4.20 to match Zorin Stable's XFCE 4.20 windowing stack.
+# These packages use Zorin's official Lite-minimal profile, defaults/live settings and menu plug-in.
 zorin-os-lite-desktop-minimal
 zorin-os-lite-default-settings
 zorin-os-lite-live-settings
 xfce4-zorinmenulite-plugin
 fonts-zorin-os-core
+xfdesktop4
 
 # Offline-ready NotreOS essentials and live-session components.
 adwaita-icon-theme
@@ -42,7 +44,6 @@ xfce4-settings
 xfce4-taskmanager
 xfce4-terminal
 xfconf
-xfdesktop4
 xfwm4
 xserver-xorg
 xserver-xorg-input-all

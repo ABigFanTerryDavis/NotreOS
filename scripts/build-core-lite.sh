@@ -14,6 +14,7 @@ SUITE="noble"
 ARCH="amd64"
 MIRROR="${NOTREOS_UBUNTU_MIRROR:-https://archive.ubuntu.com/ubuntu}"
 ZORIN_PPA="https://ppa.launchpadcontent.net/zorinos/stable/ubuntu"
+ZORIN_PATCHES_PPA="https://ppa.launchpadcontent.net/zorinos/patches/ubuntu"
 ZORIN_KEY_FINGERPRINT="B2228B8CCA5C00A2C59D35E530FCF8F64F71B61C"
 JOBS="${NOTREOS_JOBS:-$(getconf _NPROCESSORS_ONLN 2>/dev/null || printf '2')}"
 MOUNTS=()
@@ -84,6 +85,12 @@ EOF
 cat > "$ROOTFS_DIR/etc/apt/sources.list.d/zorin.sources" <<EOF
 Types: deb
 URIs: $ZORIN_PPA
+Suites: noble
+Components: main
+Signed-By: /usr/share/keyrings/zorin-stable.gpg
+
+Types: deb
+URIs: $ZORIN_PATCHES_PPA
 Suites: noble
 Components: main
 Signed-By: /usr/share/keyrings/zorin-stable.gpg
@@ -197,7 +204,7 @@ squash_bytes="$(stat -c '%s' "$STAGE_DIR/casper/filesystem.squashfs")"
     printf 'NotreOS Core Lite 0.0.1\n'
     printf 'Architecture: x86_64 (Ubuntu package architecture: amd64)\n'
     printf 'Base system: Zorin OS 18.1 Lite official minimal/live package profile on Ubuntu 24.04 LTS (Noble)\n'
-    printf 'Zorin repository: Launchpad Zorin OS Stable PPA, noble/main; signing key fingerprint %s\n' "$ZORIN_KEY_FINGERPRINT"
+    printf 'Zorin repositories: Launchpad Zorin OS Stable and Patches PPAs, noble/main; signing key fingerprint %s\n' "$ZORIN_KEY_FINGERPRINT"
     printf 'Required Zorin Lite packages: zorin-os-lite-desktop-minimal, zorin-os-lite-default-settings, zorin-os-lite-live-settings, xfce4-zorinmenulite-plugin\n'
     printf 'Desktop: official Zorin OS Lite Xsession (startxfce4); P4DE starter, NotreOS theme/panel/menu icon, first-run Welcome\n'
     printf 'Kernel: Ubuntu 24.04 HWE kernel %s\n' "$kernel_version"

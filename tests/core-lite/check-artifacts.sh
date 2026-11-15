@@ -23,11 +23,14 @@ xorriso -osirrox on -indev "$ISO" -extract /casper/filesystem.squashfs "$inspect
 xorriso -osirrox on -indev "$ISO" -extract /casper/filesystem.manifest "$inspect_dir/filesystem.manifest" >/dev/null 2>&1
 squash="$inspect_dir/filesystem.squashfs"
 for package in zorin-os-lite-desktop-minimal zorin-os-lite-default-settings \
-               zorin-os-lite-live-settings xfce4-zorinmenulite-plugin; do
+               zorin-os-lite-live-settings xfce4-zorinmenulite-plugin xfdesktop4; do
     grep -Eq "^installed ${package} " "$inspect_dir/filesystem.manifest" || {
         echo "Core Lite ISO is missing required Zorin package: $package" >&2; exit 1;
     }
 done
+if ! grep -Eq '^installed xfdesktop4 4\.20\.' "$inspect_dir/filesystem.manifest"; then
+    echo 'Core Lite ISO must contain the Zorin-compatible XFCE 4.20 desktop package.' >&2; exit 1
+fi
 unsquashfs -cat "$squash" etc/notreos-release | grep -Fq 'VERSION="0.0.1"'
 unsquashfs -cat "$squash" etc/casper.conf | grep -Fq 'USERNAME="notreos"'
 unsquashfs -cat "$squash" etc/lightdm/lightdm.conf.d/50-notreos-core-lite.conf | grep -Fq 'user-session=zorin-os-lite'
@@ -39,6 +42,7 @@ unsquashfs -cat "$squash" etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xfce
 unsquashfs -cat "$squash" usr/share/xfce4/panel/plugins/zorinmenulite.desktop | grep -Fq 'Name=NotreOS Menu'
 unsquashfs -cat "$squash" usr/share/icons/hicolor/symbolic/apps/notreos-menu-symbolic.svg | grep -Fq '#168bb6'
 unsquashfs -cat "$squash" etc/apt/sources.list.d/zorin.sources | grep -Fq 'https://ppa.launchpadcontent.net/zorinos/stable/ubuntu'
+unsquashfs -cat "$squash" etc/apt/sources.list.d/zorin.sources | grep -Fq 'https://ppa.launchpadcontent.net/zorinos/patches/ubuntu'
 unsquashfs -cat "$squash" etc/apt/sources.list.d/zorin.sources | grep -Fq 'Signed-By: /usr/share/keyrings/zorin-stable.gpg'
 unsquashfs -cat "$squash" usr/share/keyrings/zorin-stable.gpg > "$inspect_dir/zorin-stable.gpg"
 key_fingerprint="$(gpg --batch --show-keys --with-colons "$inspect_dir/zorin-stable.gpg" | awk -F: '$1 == "fpr" { print $10; exit }')"
@@ -48,7 +52,7 @@ key_fingerprint="$(gpg --batch --show-keys --with-colons "$inspect_dir/zorin-sta
 unsquashfs -cat "$squash" usr/share/doc/zorin-os-lite-default-settings/copyright | grep -Fq 'GPL-2+'
 unsquashfs -cat "$squash" usr/share/doc/xfce4-zorinmenulite-plugin/copyright | grep -Fq 'GPL-2+'
 unsquashfs -cat "$squash" usr/share/doc/zorin-icon-themes/copyright | grep -Fq 'CC-BY-SA-4.0'
-grep -Fq 'Zorin repository: Launchpad Zorin OS Stable PPA' "$MANIFEST"
+grep -Fq 'Zorin repositories: Launchpad Zorin OS Stable and Patches PPAs' "$MANIFEST"
 grep -Fq 'official Zorin OS Lite Xsession (startxfce4)' "$MANIFEST"
 
 printf '%s\n' 'Core Lite ISO and live-root checks passed.'

@@ -26,17 +26,20 @@ for path in [
         assert "Name=NotreOS Menu" in text
         assert "X-XFCE-Module=zorinmenulite" in text
 
-packages = {
+package_lines = [
     line.strip()
     for line in (profile / "packages.txt").read_text().splitlines()
     if line.strip() and not line.lstrip().startswith("#")
-}
+]
+packages = set(package_lines)
+assert len(package_lines) == len(packages), "Core Lite package profile contains duplicate entries"
 required = {
     "casper", "epiphany-browser", "file-roller", "fonts-zorin-os-core",
     "libgtk-3-bin", "linux-firmware", "mousepad", "network-manager",
-    "ristretto", "thunar", "xfce4-panel", "xfce4-session", "xserver-xorg",
-    "zorin-os-lite-desktop-minimal", "zorin-os-lite-default-settings",
-    "zorin-os-lite-live-settings", "xfce4-zorinmenulite-plugin",
+    "ristretto", "thunar", "xfdesktop4", "xfce4-panel", "xfce4-session",
+    "xserver-xorg", "zorin-os-lite-desktop-minimal",
+    "zorin-os-lite-default-settings", "zorin-os-lite-live-settings",
+    "xfce4-zorinmenulite-plugin",
 }
 missing = required - packages
 assert not missing, f"missing required Core Lite packages: {sorted(missing)}"
@@ -54,6 +57,7 @@ icon = profile / "overlay/usr/share/icons/hicolor/symbolic/apps/notreos-menu-sym
 assert icon.is_file(), "NotreOS panel menu icon is missing"
 build = (profile.parent / "scripts/build-core-lite.sh").read_text()
 assert 'https://ppa.launchpadcontent.net/zorinos/stable/ubuntu' in build
+assert 'https://ppa.launchpadcontent.net/zorinos/patches/ubuntu' in build
 assert "B2228B8CCA5C00A2C59D35E530FCF8F64F71B61C" in build
 assert "zorin-os-lite-desktop-minimal" in build and "gpg --batch --show-keys" in build
 assert "Welcome to NotreOS Core Lite" in (profile / "overlay/usr/share/notreos/welcome/index.html").read_text()
